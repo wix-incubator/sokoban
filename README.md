@@ -2,6 +2,9 @@
 
 [![NPM](https://nodei.co/npm/sokoban.png?mini=true)](https://nodei.co/npm/sokoban/)
 
+[![Dependency Status](https://david-dm.org/wix/sokoban.svg)](https://david-dm.org/wix/sokoban)
+[![devDependency Status](https://david-dm.org/wix/sokoban/dev-status.svg)](https://david-dm.org/wix/sokoban#info=devDependencies)
+
 Sokoban moves Docker containers around. Meant for usage in an E2E testing environment.
 *Note*: Sokoban was written to aid in testing Docker-based systems and was not tested in production.
 
