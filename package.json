@@ -2,7 +2,7 @@
   "name": "sokoban",
   "version": "0.1.0",
   "description": "Sokoban moves Docker containers around. Meant for usage in an E2E testing environment.",
-  "main": "dist/index.js",
+  "main": "dist/sokoban.js",
   "scripts": {
     "test": "gulp test",
     "build": "gulp transpile"
