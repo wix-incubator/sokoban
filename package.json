@@ -1,13 +1,13 @@
 {
   "name": "sokoban",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Sokoban moves Docker containers around. Meant for usage in an E2E testing environment.",
   "repository": {
     "type": "git",
     "url": "https://github.com/wix/sokoban.git"
   },
   "files": [
-      "dist"
+    "dist"
   ],
   "main": "dist/sokoban.js",
   "scripts": {
