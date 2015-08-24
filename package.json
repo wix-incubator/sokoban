@@ -9,7 +9,7 @@
   "files": [
     "dist"
   ],
-  "main": "dist/sokoban.js",
+  "main": "dist/src/sokoban.js",
   "scripts": {
     "test": "gulp test",
     "build": "gulp transpile"
