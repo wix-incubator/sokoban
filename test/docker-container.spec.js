@@ -46,7 +46,7 @@ describe("creating a new container", function() {
         return images.then(() => expect(docker.pull).not.to.have.been.called);
     });
 
-    it.only("passes environment variables to the container", () => {
+    it("passes environment variables to the container", () => {
         var fakeContainer = {};
         fakeContainer.start = sandbox.stub();
         fakeContainer.start.returns(Promise.resolve());
