@@ -72,6 +72,7 @@ describe("the docker driver", function() {
         var resolved = false;
         return new Promise(function(resolve, reject) {
             stream.on('line', line => {
+                winston.silly("line from hello-world:", line);
                 if (!resolved) {
                     resolved = true;
                     resolve(line);
@@ -81,6 +82,8 @@ describe("the docker driver", function() {
     }
 
     it("creates and starts a container", () => {
+        winston.level = 'silly';
+
         container = new DockerContainer("hello-world");
         container.pullIfNeeded();
 
