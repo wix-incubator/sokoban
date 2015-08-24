@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/wix/sokoban.git"
   },
+  "files": [
+      "dist"
+  ],
   "main": "dist/sokoban.js",
   "scripts": {
     "test": "gulp test",
