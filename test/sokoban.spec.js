@@ -12,7 +12,10 @@ chai.use(SinonChai);
 chai.use(ChaiAsPromised);
 
 
-describe("Sokoban", () => {
+describe("Sokoban", function() {
+
+    this.slow(2000);
+
     const Host = "127.0.0.1";
 
     var container;

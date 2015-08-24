@@ -11,7 +11,9 @@ var expect = chai.expect;
 chai.use(SinonChai);
 chai.use(ChaiString);
 
-describe("creating a new container", () => {
+describe("creating a new container", function() {
+    this.slow(2000);
+
     var imageTag = "a/b";
     var docker;
 
@@ -45,9 +47,12 @@ describe("creating a new container", () => {
     });
 });
 
+// this is the integration test
 describe("the docker driver", function() {
 
     var container;
+
+    this.slow(3000);
     this.timeout(1000 * 15);
 
     function consumeFirstLine(stream) {
