@@ -45,6 +45,19 @@ describe("creating a new container", function() {
 
         return images.then(() => expect(docker.pull).not.to.have.been.called);
     });
+
+    it.only("passes environment variables to the container", () => {
+        var fakeContainer = {};
+        fakeContainer.start = sandbox.stub();
+        fakeContainer.start.returns(Promise.resolve());
+        docker.createContainer.returns(Promise.resolve(fakeContainer));
+
+        return new DockerContainer(imageTag, "a")
+            .run(null, {a: 'b', c: 'd'})
+            .then(() => {
+               return expect(docker.createContainer).to.be.calledWith({name: "a", Image: imageTag, Env: ["a=b", "c=d"]});
+            });
+    });
 });
 
 // this is the integration test
@@ -71,7 +84,7 @@ describe("the docker driver", function() {
         container = new DockerContainer("hello-world");
         container.pullIfNeeded();
 
-        return container.run()
+        return container.run(null, {"SOMEVAR": "someValue"})
             .then(() => container.logs())
             .then(consumeFirstLine)
             .then(line => expect(line).to.endWith('Hello from Docker.'));

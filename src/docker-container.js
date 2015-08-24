@@ -4,6 +4,7 @@ import Promise from 'promise';
 import readline from 'readline';
 import colors from 'colors/safe';
 import winston from 'winston';
+import _ from 'lodash';
 
 function logAndThrow(args) {
     return function (e) {
@@ -63,12 +64,11 @@ DockerContainer.prototype.pullIfNeeded = function() {
 }
 
 DockerContainer.prototype.run = function(ports, env) {
-    env = env || [];
-
     var create = () => {
-        winston.info("DockerContainer.create: creating container from image", this.imageName, "with name", this.containerName, "with environment variables", env);
+        var environmentVariables = _.map(env, (v, k) => `${k}=${v}`);
+        winston.info("DockerContainer.create: creating container from image", this.imageName, "with name", this.containerName, "with environment variables", JSON.stringify(environmentVariables));
 
-        return this.docker.createContainer({Image: this.imageName, name: this.containerName, Env: env});
+        return this.docker.createContainer({Image: this.imageName, name: this.containerName, Env: environmentVariables});
     }
 
     var start = (container) => {

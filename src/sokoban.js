@@ -18,7 +18,9 @@ Sokoban.prototype.run = function({containerName, bindings, env, barrier, maxRetr
     var container = this.containers[containerName];
     var host = container.host();
 
-    return container.run(bindings || {}, env || [])
+    barrier = barrier || function() {};
+
+    return container.run(bindings || {}, env || {})
         .then(() => retry(() => barrier(host), {maxRetry: maxRetries || 5}))
         .then(
             () => {
