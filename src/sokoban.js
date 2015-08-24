@@ -4,7 +4,7 @@ import _ from 'lodash';
 import retry from 'qretry';
 import winston from 'winston';
 
-function Docherstrator() {
+function Sokoban() {
     var containers = {};
 
     this.provision = function(imageTag, containerName) {
@@ -42,4 +42,4 @@ function Docherstrator() {
 
 };
 
-export default Docherstrator;
+export default Sokoban;
