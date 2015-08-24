@@ -35,5 +35,5 @@ sokoban.run({containerName: "hello"});
 * `maxRetries` - how many times to retry on the barrier before giving up
 
 ## Contribution
-This project is _very_ early stage and is undere heavy development. Please feel free to open issues for any missing functionality, etc.
+This project is _very_ early stage and is under heavy development. Please feel free to open issues for any missing functionality, etc.
 
