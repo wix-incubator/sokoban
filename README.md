@@ -2,7 +2,6 @@
 [![Build Status](https://travis-ci.org/wix/sokoban.png)](https://travis-ci.org/wix/sokoban)
 
 [![NPM](https://nodei.co/npm/sokoban.png?mini=true)](https://nodei.co/npm/sokoban/)
-
 [![Dependency Status](https://david-dm.org/wix/sokoban.svg)](https://david-dm.org/wix/sokoban)
 [![devDependency Status](https://david-dm.org/wix/sokoban/dev-status.svg)](https://david-dm.org/wix/sokoban#info=devDependencies)
 
