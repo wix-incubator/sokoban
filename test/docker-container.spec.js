@@ -68,19 +68,6 @@ describe("the docker driver", function() {
     this.slow(3000);
     this.timeout(1000 * 15);
 
-    function consumeFirstLine(stream) {
-        var resolved = false;
-        return new Promise(function(resolve, reject) {
-            stream.on('line', line => {
-                winston.silly("line from hello-world:", line);
-                if (!resolved) {
-                    resolved = true;
-                    resolve(line);
-                }}).on('error', reject)
-                   .on('close', () => { if (!resolved) reject(new Error("Stream was empty")) });
-        });
-    }
-
     it("creates and starts a container", () => {
         winston.level = 'silly';
 
@@ -89,8 +76,7 @@ describe("the docker driver", function() {
 
         return container.run(null, {"SOMEVAR": "someValue"})
             .then(() => container.logs())
-            .then(consumeFirstLine)
-            .then(line => expect(line).to.endWith('Hello from Docker.'));
+            .then(log => expect(log).to.contain('Hello from Docker.'));
     });
 
     after("kill the container", () => container.kill);

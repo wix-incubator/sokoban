@@ -5,6 +5,7 @@ import readline from 'readline';
 import colors from 'colors/safe';
 import winston from 'winston';
 import _ from 'lodash';
+import through from 'through';
 
 function logAndThrow(args) {
     return function (e) {
@@ -98,7 +99,7 @@ DockerContainer.prototype.printLogs = function() {
         winston.info("DockerContainer.logs: dumping logs for container", this.containerName);
         var color = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)];
         return this.logs().then(logs => {
-            logs.on('line', (line) => {
+            logs.split('\n').map(line => {
                 winston.info("DockerContainer", colors[color](this.containerName), ":", line);
             });
         });
@@ -108,9 +109,23 @@ DockerContainer.prototype.printLogs = function() {
 };
 
 DockerContainer.prototype.logs = function() {
+    var docker = this.docker;
     if (this.theContainer) {
-        return this.theContainer.logs({stdout: 1, stderr: 1})
-            .then(logs => readline.createInterface({input: logs}));
+        return this.theContainer.logs({stdout: 1, stderr: 0})
+            .then(muxedStream => new Promise(function(resolve, reject) {
+                var buffer = "";
+                var ts = through(function (data) {
+                    this.queue(data)
+                }, function () {
+                    this.queue(null)
+                }).on('data', data => buffer += data);
+
+                muxedStream.on('error', reject)
+                    .on('end', () => resolve(buffer));
+
+                docker.$subject.modem.demuxStream(muxedStream, ts, ts);
+
+            }));
     } else {
         winston.error("Can't dump logs of non-started container", this.containerName, "from image", this.imageName);
     }
