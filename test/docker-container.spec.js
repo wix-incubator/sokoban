@@ -6,6 +6,7 @@ import Docker from 'dockerode-promise';
 import chai from 'chai';
 import winston from 'winston';
 import Promise from 'promise';
+import retry from 'qretry';
 
 var expect = chai.expect;
 chai.use(SinonChai);
@@ -75,8 +76,7 @@ describe("the docker driver", function() {
         container.pullIfNeeded();
 
         return container.run(null, {"SOMEVAR": "someValue"})
-            .then(() => container.logs())
-            .then(log => expect(log).to.contain('Hello from Docker.'));
+            .then(() => retry(() => container.logs().then(log => expect(log).to.contain('Hello from Docker.'))));
     });
 
     after("kill the container", () => container.kill);
