@@ -1,4 +1,5 @@
 # Sokoban
+[![Build Status](https://travis-ci.org/wix/sokoban.png)](https://travis-ci.org/wix/sokoban)
 
 [![NPM](https://nodei.co/npm/sokoban.png?mini=true)](https://nodei.co/npm/sokoban/)
 
