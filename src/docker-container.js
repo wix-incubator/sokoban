@@ -14,13 +14,10 @@ function logAndThrow(args) {
     }
 }
 
-var dockerPlatformOptions = {win32: {socketPath: '/var/run/docker.sock'}};
-
 function DockerContainer(imageName, containerName) {
 
     // this is because in CI we must use sock explicitly, while in OSX this doesn't work
-
-    this.docker = new Docker(dockerPlatformOptions[process.platform]);
+    this.docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
 
     this.imageName = imageName;
     this.containerName = containerName;
