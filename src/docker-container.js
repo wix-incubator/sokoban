@@ -155,7 +155,7 @@ DockerContainer.prototype.kill = function () {
             .catch(e => winston.info("error stopping container", e))
             .then(() => this._container.remove());
     } else {
-        winston.error("Not shutting down non-started container", this.containerName, "from image", this.imageName);
+        winston.info("Not shutting down non-started container", this.containerName, "from image", this.imageName);
     }
 };
 
