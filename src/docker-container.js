@@ -64,14 +64,16 @@ DockerContainer.prototype.pullIfNeeded = function () {
 
 }
 
-DockerContainer.prototype.run = function ({ports, env, links}) {
+DockerContainer.prototype.run = function ({ports, env, links, volumes}) {
     var create = () => {
         var options = {
             Image: this.imageName,
             name: this.containerName,
             Env: _.map(env, (v, k) => `${k}=${v}`),
+            Volumes: _.mapValues(volumes, () => ({})),
             HostConfig: {
                 Links: _.map(links, (v, k) => `${k}:${v}`),
+                Binds: _.map(volumes, (v, k) => `${v}:${k}`),
             },
         }
 

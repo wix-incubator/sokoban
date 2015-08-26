@@ -72,6 +72,8 @@ describe("DockerContainer", () => {
         it("passes links to the container", () => run({links: {"containerName": "nameInTarget"}})
             .then(() => expect(docker.createContainer).to.be.calledWithMatch({HostConfig: {Links: ["containerName:nameInTarget"]}})));
 
+        it("passes volumes and binds to the container", () => run({volumes: {"/guestDir": "/hostDir"}})
+            .then(() => expect(docker.createContainer).to.be.calledWithMatch({Volumes: {"/guestDir": {}}, HostConfig: {Binds: ["/hostDir:/guestDir"]}})));
     });
 
 });
