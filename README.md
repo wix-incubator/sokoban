@@ -12,6 +12,10 @@ Sokoban moves Docker containers around. Meant for usage in an E2E testing enviro
 
 `npm install sokoban`
 
+## Prerequisites
+
+Docker needs to be installed and working on your local machine. Plesae follow the instructions on [the Docker website](https://docs.docker.com/installation), then make sure the installation was successful by running `docker run hello-world` from your terminal.
+
 ## Usage
 
 Instantiate in your test code, provision and run containers once in a `before` hook, then call `killAll` in an `after` hook.
