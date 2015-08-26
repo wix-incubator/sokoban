@@ -26,7 +26,7 @@ function DockerContainer(imageName, containerName) {
     this.pullResult = Promise.resolve();
 }
 
-DockerContainer.prototype.pullIfNeeded = function() {
+DockerContainer.prototype.pullIfNeeded = function () {
 
     var docker = this.docker;
     var imageName = this.imageName;
@@ -64,12 +64,20 @@ DockerContainer.prototype.pullIfNeeded = function() {
 
 }
 
-DockerContainer.prototype.run = function(ports, env) {
+DockerContainer.prototype.run = function ({ports, env, links}) {
     var create = () => {
-        var environmentVariables = _.map(env, (v, k) => `${k}=${v}`);
-        winston.info("DockerContainer.create: creating container from image", this.imageName, "with name", this.containerName, "with environment variables", JSON.stringify(environmentVariables));
+        var options = {
+            Image: this.imageName,
+            name: this.containerName,
+            Env: _.map(env, (v, k) => `${k}=${v}`),
+            HostConfig: {
+                Links: _.map(links, (v, k) => `${k}:${v}`),
+            },
+        }
 
-        return this.docker.createContainer({Image: this.imageName, name: this.containerName, Env: environmentVariables});
+        winston.info("DockerContainer.create: creating container with options", JSON.stringify(options));
+
+        return this.docker.createContainer(options);
     }
 
     var start = (container) => {
@@ -94,7 +102,7 @@ DockerContainer.prototype.run = function(ports, env) {
 };
 
 
-DockerContainer.prototype.printLogs = function() {
+DockerContainer.prototype.printLogs = function () {
     if (this.theContainer) {
         winston.info("DockerContainer.logs: dumping logs for container", this.containerName);
         var color = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)];
@@ -108,11 +116,11 @@ DockerContainer.prototype.printLogs = function() {
     }
 };
 
-DockerContainer.prototype.logs = function() {
+DockerContainer.prototype.logs = function () {
     var docker = this.docker;
     if (this.theContainer) {
         return this.theContainer.logs({stdout: 1, stderr: 0})
-            .then(muxedStream => new Promise(function(resolve, reject) {
+            .then(muxedStream => new Promise(function (resolve, reject) {
                 var buffer = "";
                 var ts = through(function (data) {
                     this.queue(data)
@@ -131,7 +139,7 @@ DockerContainer.prototype.logs = function() {
     }
 };
 
-DockerContainer.prototype.kill = function() {
+DockerContainer.prototype.kill = function () {
     if (this.theContainer) {
         winston.info("killing container", this.containerName);
 
@@ -142,7 +150,7 @@ DockerContainer.prototype.kill = function() {
     }
 };
 
-DockerContainer.prototype.host = function() {
+DockerContainer.prototype.host = function () {
     if (process.env.DOCKER_HOST) {
         return url.parse(process.env.DOCKER_HOST).hostname;
     } else {

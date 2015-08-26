@@ -13,7 +13,7 @@ describe("the docker driver", function() {
         container = new DockerContainer("hello-world");
         container.pullIfNeeded();
 
-        return container.run(null, {"SOMEVAR": "someValue"})
+        return container.run({env: {"SOMEVAR": "someValue"}})
             .then(() => retry(() => container.logs().then(log => expect(log).to.contain('Hello from Docker.'))));
     });
 
