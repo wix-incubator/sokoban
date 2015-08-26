@@ -13,23 +13,24 @@ Sokoban.prototype.provision = function(imageTag, containerName) {
     this.containers[containerName].pullIfNeeded();
 };
 
-Sokoban.prototype.run = function({containerName, bindings, env, barrier, maxRetries}) {
+Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, links, maxRetries}) {
 
     var container = this.containers[containerName];
     var host = container.host();
 
     barrier = barrier || function() {};
+    maxRetries = maxRetries || 5;
 
-    return container.run(bindings || {}, env || {})
-        .then(() => retry(() => barrier(host), {maxRetry: maxRetries || 5}))
+    return container.run({ports, env, volumes, links})
+        .then(() => retry(() => barrier(host), {maxRetry: maxRetries}))
         .then(
             () => {
                 var containerInfo = {host};
                 winston.debug(containerName, "ready, returning container info", containerInfo);
                 return containerInfo;
                 },
-            (e) => {
-                winston.error(containerName, "not ready after", maxRetries, ", error is", e);
+            e => {
+                winston.error(containerName, "not ready after", maxRetries, "attempts, error is", e);
                 throw e;
             }
         );

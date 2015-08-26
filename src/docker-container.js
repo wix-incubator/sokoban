@@ -64,7 +64,7 @@ DockerContainer.prototype.pullIfNeeded = function () {
 
 }
 
-DockerContainer.prototype.run = function ({ports, env, links, volumes}) {
+DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
     var create = () => {
         var options = {
             Image: this.imageName,
@@ -89,10 +89,12 @@ DockerContainer.prototype.run = function ({ports, env, links, volumes}) {
             bindings[ports.from + "/tcp"] = [{"HostPort": "" + ports.to}];
         }
 
-        winston.info("DockerContainer.start: starting container from image", this.imageName, "with id", container.id);
-        return container.start({
+        var options = {
             "PortBindings": bindings
-        }).then(() => {
+        };
+
+        winston.info("DockerContainer.start: starting container from image", this.imageName, "with id", container.id, "and options", JSON.stringify(options));
+        return container.start(options).then(() => {
             winston.debug("DockerContainer.start: container", this.containerName, "started");
             this.theContainer = container;
         });
