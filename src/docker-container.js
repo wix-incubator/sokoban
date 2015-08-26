@@ -17,18 +17,18 @@ function logAndThrow(args) {
 function DockerContainer(imageName, containerName) {
 
     // this is because in CI we must use sock explicitly, while in OSX this doesn't work
-    this.docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
+    this._docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
 
     this.imageName = imageName;
     this.containerName = containerName;
 
-    this.theContainer = undefined;
+    this._container = undefined;
     this.pullResult = Promise.resolve();
 }
 
 DockerContainer.prototype.pullIfNeeded = function () {
 
-    var docker = this.docker;
+    var docker = this._docker;
     var imageName = this.imageName;
 
     function onComplete(stream) {
@@ -79,7 +79,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
 
         winston.info("DockerContainer.create: creating container with options", JSON.stringify(options));
 
-        return this.docker.createContainer(options);
+        return this._docker.createContainer(options);
     }
 
     var start = (container) => {
@@ -93,10 +93,11 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
             "PortBindings": bindings
         };
 
-        winston.info("DockerContainer.start: starting container from image", this.imageName, "with id", container.id, "and options", JSON.stringify(options));
+        winston.info("DockerContainer.start: starting container from image", this.imageName, "with id", container.$subject.id, "and options", JSON.stringify(options));
+        winston.silly("DockerContainer: container = ", JSON.stringify(container));
         return container.start(options).then(() => {
             winston.debug("DockerContainer.start: container", this.containerName, "started");
-            this.theContainer = container;
+            this._container = container;
         });
     }
 
@@ -106,11 +107,11 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
 };
 
 DockerContainer.prototype.isRunning = function() {
-    return !!this.theContainer;
+    return !!this._container;
 }
 
 DockerContainer.prototype.printLogs = function () {
-    if (this.theContainer) {
+    if (this._container) {
         winston.info("DockerContainer.logs: dumping logs for container", this.containerName);
         var color = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)];
         return this.logs().then(logs => {
@@ -124,9 +125,9 @@ DockerContainer.prototype.printLogs = function () {
 };
 
 DockerContainer.prototype.logs = function () {
-    var docker = this.docker;
-    if (this.theContainer) {
-        return this.theContainer.logs({stdout: 1, stderr: 0})
+    var docker = this._docker;
+    if (this._container) {
+        return this._container.logs({stdout: 1, stderr: 0})
             .then(muxedStream => new Promise(function (resolve, reject) {
                 var buffer = "";
                 var ts = through(function (data) {
@@ -147,11 +148,12 @@ DockerContainer.prototype.logs = function () {
 };
 
 DockerContainer.prototype.kill = function () {
-    if (this.theContainer) {
+    if (this._container) {
         winston.info("killing container", this.containerName);
 
-        return this.theContainer.stop()
-            .then(() => this.theContainer.remove());
+        return this._container.stop()
+            .catch(e => winston.info("error stopping container", e))
+            .then(() => this._container.remove());
     } else {
         winston.error("Not shutting down non-started container", this.containerName, "from image", this.imageName);
     }
