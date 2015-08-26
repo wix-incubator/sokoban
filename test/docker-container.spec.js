@@ -6,15 +6,12 @@ import Docker from 'dockerode-promise';
 import chai from 'chai';
 import winston from 'winston';
 import Promise from 'promise';
-import retry from 'qretry';
 
 var expect = chai.expect;
 chai.use(SinonChai);
 chai.use(ChaiString);
 
-describe("creating a new container", function() {
-    this.slow(2000);
-
+describe("DockerContainer", () => {
     var imageTag = "a/b";
     var docker;
 
@@ -29,55 +26,75 @@ describe("creating a new container", function() {
         sandbox.restore();
     });
 
-    it("attempts to pull images that do not exist locally", () => {
-        var images = Promise.resolve([]);
-        docker.listImages.withArgs({filter: imageTag}).returns(images);
+    describe("pullIfNeeded", function() {
+        this.slow(2000);
 
-        new DockerContainer(imageTag, "a").pullIfNeeded();
+        it("attempts to pull images that do not exist locally", () => {
+            var images = Promise.resolve([]);
+            docker.listImages.withArgs({filter: imageTag}).returns(images);
 
-        return images.then(() => expect(docker.pull).to.have.been.calledWith(imageTag));
+            new DockerContainer(imageTag, "a").pullIfNeeded();
+
+            return images.then(() => expect(docker.pull).to.have.been.calledWith(imageTag));
+        });
+
+        it("does not attempt to pull images that do exist locally", () => {
+            var images = Promise.resolve([{}]);
+            docker.listImages.withArgs({filter: imageTag}).returns(images);
+
+            new DockerContainer(imageTag, "a").pullIfNeeded();
+
+            return images.then(() => expect(docker.pull).not.to.have.been.called);
+        });
     });
 
-    it("does not attempt to pull images that do exist locally", () => {
-        var images = Promise.resolve([{}]);
-        docker.listImages.withArgs({filter: imageTag}).returns(images);
-
-        new DockerContainer(imageTag, "a").pullIfNeeded();
-
-        return images.then(() => expect(docker.pull).not.to.have.been.called);
-    });
-
-    it("passes environment variables to the container", () => {
+    describe("run", () => {
         var fakeContainer = {};
-        fakeContainer.start = sandbox.stub();
-        fakeContainer.start.returns(Promise.resolve());
-        docker.createContainer.returns(Promise.resolve(fakeContainer));
 
-        return new DockerContainer(imageTag, "a")
-            .run(null, {a: 'b', c: 'd'})
-            .then(() => {
-               return expect(docker.createContainer).to.be.calledWith({name: "a", Image: imageTag, Env: ["a=b", "c=d"]});
-            });
+        beforeEach("initialize a fake controller", () => {
+            fakeContainer.start = sandbox.stub();
+            fakeContainer.start.returns(Promise.resolve());
+            docker.createContainer.returns(Promise.resolve(fakeContainer));
+        });
+
+        it("creates and starts a container", () => {
+
+            return new DockerContainer(imageTag, "a")
+                .run(null, null)
+                .then(() => expect(docker.createContainer).to.be.calledWithMatch({name: "a", Image: imageTag}))
+                .then(() => expect(fakeContainer.start).to.be.called);
+        });
+
+        it("passes environment variables to the container", () => {
+
+            return new DockerContainer(imageTag, "a")
+                .run(null, {a: 'b', c: 'd'})
+                .then(() => {
+                    return expect(docker.createContainer).to.be.calledWithMatch({
+                        Env: ["a=b", "c=d"]
+                    });
+                });
+        });
+        //
+        //it("passes links to the container", () => {
+        //    var fakeContainer = {};
+        //    fakeContainer.start = sandbox.stub();
+        //    fakeContainer.start.returns(Promise.resolve());
+        //    docker.createContainer.returns(Promise.resolve(fakeContainer));
+        //
+        //    return new DockerContainer(imageTag, "a")
+        //        .run(null, null, {"containerName": "nameInTarget"})
+        //        .then(() => {
+        //            return expect(docker.createContainer).to.be.calledWith({
+        //                name: "a",
+        //                Image: imageTag,
+        //                HostConfig: {}
+        //                Links: ["a=b", "c=d"]
+        //            });
+        //        });
+        //})
     });
+
 });
 
-// this is the integration test
-describe("the docker driver", function() {
 
-    var container;
-
-    this.slow(3000);
-    this.timeout(1000 * 15);
-
-    it("creates and starts a container", () => {
-        winston.level = 'silly';
-
-        container = new DockerContainer("hello-world");
-        container.pullIfNeeded();
-
-        return container.run(null, {"SOMEVAR": "someValue"})
-            .then(() => retry(() => container.logs().then(log => expect(log).to.contain('Hello from Docker.'))));
-    });
-
-    after("kill the container", () => container.kill);
-});
