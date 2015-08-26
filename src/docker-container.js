@@ -28,7 +28,7 @@ function DockerContainer(imageName, containerName) {
 
 DockerContainer.prototype.pullIfNeeded = function () {
 
-    const onComplete = stream => new Promise(function (resolve, reject) {
+    const onComplete = stream => new Promise((resolve, reject) => {
         const onFinished = (err, output) => {
             if (err) {
                 winston.error("DockerContainer: pull failed with error", err);
