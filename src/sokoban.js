@@ -22,7 +22,7 @@ Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, l
     maxRetries = maxRetries || 5;
 
     return container.run({ports, env, volumes, links})
-        .then(() => retry(() => barrier(host), {maxRetry: maxRetries}))
+        .then(() => retry(() => barrier(host), {maxRetry: maxRetries, interval: 2000, intervalMultiplicator: 1.2}))
         .then(
             () => {
                 var containerInfo = {host};
