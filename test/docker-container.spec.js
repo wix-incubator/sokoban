@@ -51,7 +51,10 @@ describe("DockerContainer", () => {
     describe("run", () => {
         var fakeContainer = {};
         var containerName = "a";
-        var run = options => new DockerContainer(imageTag, containerName).run(options || {});
+        var run = options => {
+            var container = new DockerContainer(imageTag, containerName);
+            return container.run(options || {})
+                .then(() => container) };
 
         beforeEach("initialize a fake controller", () => {
             fakeContainer.start = sandbox.stub();
@@ -60,8 +63,10 @@ describe("DockerContainer", () => {
         });
 
         it("creates and starts a container", () => run()
+            .then(container => expect(container.isRunning()).to.be.true)
             .then(() => expect(docker.createContainer).to.be.calledWithMatch({name: containerName, Image: imageTag}))
             .then(() => expect(fakeContainer.start).to.be.called));
+
 
         it("passes port bindings to the container's start method", () => run({ports: {from: 1000, to: 2000}})
             .then(() => expect(fakeContainer.start).to.be.calledWith({"PortBindings": {"1000/tcp": [{HostPort: "2000"}]}})));

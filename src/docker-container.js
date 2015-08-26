@@ -105,6 +105,9 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
         .then(start, logAndThrow(["failed starting container for image", this.imageName]));
 };
 
+DockerContainer.prototype.isRunning = function() {
+    return !!this.theContainer;
+}
 
 DockerContainer.prototype.printLogs = function () {
     if (this.theContainer) {
