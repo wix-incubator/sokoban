@@ -3,7 +3,7 @@ import retry from 'qretry';
 import {expect} from 'chai';
 import winston from 'winston';
 
-describe.only("the docker driver", function() {
+describe("the docker driver", function() {
 
     var container;
 
