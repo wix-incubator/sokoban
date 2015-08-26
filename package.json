@@ -11,8 +11,8 @@
   ],
   "main": "dist/src/sokoban.js",
   "scripts": {
-    "test": "gulp test",
-    "build": "gulp transpile"
+    "test": "node_modules/.bin/gulp test",
+    "build": "node_modules/.bin/gulp transpile"
   },
   "devDependencies": {
     "del": "^1.2.0",
