@@ -7,18 +7,17 @@ import chai from 'chai';
 import winston from 'winston';
 import Promise from 'promise';
 
-var expect = chai.expect;
+const expect = chai.expect;
 chai.use(SinonChai);
 chai.use(ChaiString);
 
 describe("DockerContainer", () => {
-    var imageTag = "a/b";
-    var docker;
+    const imageTag = "a/b";
+    const sandbox = sinon.sandbox.create();
 
-    var sandbox;
+    let docker;
 
     beforeEach(() => {
-        sandbox = sinon.sandbox.create();
         docker = sandbox.stub(Docker.prototype);
     });
 
@@ -30,7 +29,7 @@ describe("DockerContainer", () => {
         this.slow(2000);
 
         it("attempts to pull images that do not exist locally", () => {
-            var images = Promise.resolve([]);
+            const images = Promise.resolve([]);
             docker.listImages.withArgs({filter: imageTag}).returns(images);
 
             new DockerContainer(imageTag, "a").pullIfNeeded();
@@ -39,7 +38,7 @@ describe("DockerContainer", () => {
         });
 
         it("does not attempt to pull images that do exist locally", () => {
-            var images = Promise.resolve([{}]);
+            const images = Promise.resolve([{}]);
             docker.listImages.withArgs({filter: imageTag}).returns(images);
 
             new DockerContainer(imageTag, "a").pullIfNeeded();
@@ -49,10 +48,10 @@ describe("DockerContainer", () => {
     });
 
     describe("run", () => {
-        var fakeContainer = {};
-        var containerName = "a";
-        var run = options => {
-            var container = new DockerContainer(imageTag, containerName);
+        const fakeContainer = {};
+        const containerName = "a";
+        const run = options => {
+            const container = new DockerContainer(imageTag, containerName);
             return container.run(options || {})
                 .then(() => container) };
 

@@ -28,45 +28,38 @@ function DockerContainer(imageName, containerName) {
 
 DockerContainer.prototype.pullIfNeeded = function () {
 
-    var docker = this._docker;
-    var imageName = this.imageName;
-
-    function onComplete(stream) {
-        return new Promise(function (resolve, reject) {
-            function onFinished(err, output) {
-                if (err) {
-                    winston.error("DockerContainer: pull failed with error", err);
-                    reject(err);
-                } else {
-                    winston.info("DockerContainer: pull complete for image", imageName);
-                    resolve(output);
-                }
+    const onComplete = stream => new Promise(function (resolve, reject) {
+        const onFinished = (err, output) => {
+            if (err) {
+                winston.error("DockerContainer: pull failed with error", err);
+                reject(err);
+            } else {
+                winston.info("DockerContainer: pull complete for image", this.imageName);
+                resolve(output);
             }
+        }
 
-            function onProgress(event) {
-                winston.silly("DockerContainer: pull.onProgress", imageName, event);
-            }
+        const onProgress = event => winston.silly("DockerContainer: pull.onProgress", this.imageName, event);
 
-            docker.$subject.modem.followProgress(stream, onFinished, onProgress);
-        });
-    }
+        this._docker.$subject.modem.followProgress(stream, onFinished, onProgress);
+    });
 
-    this.pullResult = docker.listImages({filter: imageName})
+    this.pullResult = this._docker.listImages({filter: this.imageName})
         .then(images => {
             if (images.length) {
-                winston.debug("DockerContainer: image", imageName, "found locally; not pulling");
+                winston.debug("DockerContainer: image", this.imageName, "found locally; not pulling");
                 return Promise.resolve();
             } else {
-                winston.info("DockerContainer: pulling image", imageName);
-                return docker.pull(imageName).then(onComplete, logAndThrow(["failed pulling image", imageName]));
+                winston.info("DockerContainer: pulling image", this.imageName);
+                return this._docker.pull(this.imageName).then(onComplete, logAndThrow(["failed pulling image", this.imageName]));
             }
         });
 
 }
 
 DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
-    var create = () => {
-        var options = {
+    const create = () => {
+        const options = {
             Image: this.imageName,
             name: this.containerName,
             Env: _.map(env, (v, k) => `${k}=${v}`),
@@ -82,18 +75,18 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
         return this._docker.createContainer(options);
     }
 
-    var start = (container) => {
-        var bindings = {};
+    const start = (container) => {
+        const bindings = {};
 
         if (ports) {
             bindings[ports.from + "/tcp"] = [{"HostPort": "" + ports.to}];
         }
 
-        var options = {
+        const options = {
             "PortBindings": bindings
         };
 
-        winston.info("DockerContainer.start: starting container from image", this.imageName, "with id", container.$subject.id, "and options", JSON.stringify(options));
+        winston.info("DockerContainer.start: starting container from image", this.imageName, "with options", JSON.stringify(options));
         winston.silly("DockerContainer: container = ", JSON.stringify(container));
         return container.start(options).then(() => {
             winston.debug("DockerContainer.start: container", this.containerName, "started");
@@ -110,7 +103,7 @@ DockerContainer.prototype.isRunning = function() {
     return !!this._container;
 }
 
-DockerContainer.prototype.printLogs = function () {
+DockerContainer.prototype.printLogs = function() {
     if (this._container) {
         winston.info("DockerContainer.logs: dumping logs for container", this.containerName);
         var color = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)];
@@ -125,12 +118,11 @@ DockerContainer.prototype.printLogs = function () {
 };
 
 DockerContainer.prototype.logs = function () {
-    var docker = this._docker;
     if (this._container) {
         return this._container.logs({stdout: 1, stderr: 0})
-            .then(muxedStream => new Promise(function (resolve, reject) {
-                var buffer = "";
-                var ts = through(function (data) {
+            .then(muxedStream => new Promise((resolve, reject) => {
+                let buffer = "";
+                const ts = through(function (data) {
                     this.queue(data)
                 }, function () {
                     this.queue(null)
@@ -139,7 +131,7 @@ DockerContainer.prototype.logs = function () {
                 muxedStream.on('error', reject)
                     .on('end', () => resolve(buffer));
 
-                docker.$subject.modem.demuxStream(muxedStream, ts, ts);
+                this._docker.$subject.modem.demuxStream(muxedStream, ts, ts);
 
             }));
     } else {

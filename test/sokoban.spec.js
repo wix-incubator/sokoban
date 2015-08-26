@@ -7,7 +7,7 @@ import chai from 'chai';
 import winston from 'winston';
 import Promise from 'promise';
 
-var expect = chai.expect;
+const expect = chai.expect;
 chai.use(SinonChai);
 chai.use(ChaiAsPromised);
 
@@ -15,15 +15,15 @@ chai.use(ChaiAsPromised);
 describe("Sokoban", function() {
 
     this.slow(2000);
+    this.timeout(10000);
 
     const Host = "127.0.0.1";
+    const sandbox = sinon.sandbox.create();
 
-    var container;
-    var sandbox;
-    var sokoban;
+    let container;
+    let sokoban;
 
     beforeEach(() => {
-        sandbox = sinon.sandbox.create();
         container = sandbox.stub(DockerContainer.prototype);
         container.host.returns(Host);
         container.run.returns(Promise.resolve());
@@ -41,38 +41,38 @@ describe("Sokoban", function() {
         expect(container.pullIfNeeded).to.have.been.called;
     });
 
-    it("runs a container", () => {
-        var barrier = sandbox.spy();
-        sokoban.provision("a/b", "a");
+    describe("run", () => {
 
-        return sokoban.run({barrier, containerName: "a"})
-            .then(containerInfo => {
-                expect(barrier).to.have.been.called;
-                expect(containerInfo.host).to.equal(Host);
-            })
-    });
+        beforeEach(() => sokoban.provision("a/b", "a"));
 
-    it("retries on barrier failure", () => {
-        var barrier = sandbox.stub();
-        sokoban.provision("a/b", "a");
+        it("runs a container", () => {
+               const barrier = sandbox.spy();
 
-        barrier.onFirstCall().throws(new Error("kaboom"))
-            .onSecondCall().returns(true);
+               return sokoban.run({barrier, containerName: "a"})
+                   .then(containerInfo => {
+                       expect(barrier).to.have.been.called;
+                       expect(containerInfo.host).to.equal(Host);
+                   })
+           });
 
-        return sokoban.run({barrier, containerName: "a"})
-            .then(() => {
-                expect(barrier).to.have.been.calledTwice;
-            })
+           it("retries on barrier failure", () => {
+               const barrier = sandbox.stub();
 
-    }) ;
+               barrier.onFirstCall().throws(new Error("kaboom"))
+                   .onSecondCall().returns(true);
 
-    it("gives up when exceeded max retries", () => {
-        var barrier = sandbox.stub();
-        sokoban.provision("a/b", "a");
+               return sokoban.run({barrier, containerName: "a", delayInterval: 1})
+                   .then(() => expect(barrier).to.have.been.calledTwice);
 
-        barrier.throws(new Error("kaboom"));
+           }) ;
 
-        return expect(sokoban.run({barrier, containerName: "a", maxRetries: 1})).to.be.rejected;
+           it("gives up when exceeded max retries", () => {
+               const barrier = sandbox.stub();
+
+               barrier.throws(new Error("kaboom"));
+
+               return expect(sokoban.run({barrier, containerName: "a", delayInterval: 1, maxRetries: 1})).to.be.rejected;
+           });
     });
 
     it("fetches logs from all containers", () => {
@@ -81,9 +81,7 @@ describe("Sokoban", function() {
 
         container.printLogs.returns(Promise.resolve());
 
-        return sokoban.dumpAllLogs().then(() => {
-            return expect(container.printLogs).to.be.calledTwice;
-        })
+        return sokoban.dumpAllLogs().then(() => expect(container.printLogs).to.be.calledTwice);
     });
 
     it("kills all containers", () => {
@@ -93,8 +91,6 @@ describe("Sokoban", function() {
         container.kill = sandbox.stub();
         container.kill.returns(Promise.resolve());
 
-        return sokoban.killAll().then(() => {
-            return expect(container.kill).to.be.calledTwice;
-        })
+        return sokoban.killAll().then(() => expect(container.kill).to.be.calledTwice);
     });
 });

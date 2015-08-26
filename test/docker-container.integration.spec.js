@@ -5,7 +5,7 @@ import winston from 'winston';
 
 describe("the docker driver", function() {
 
-    var container;
+    let container;
 
     this.slow(3000);
     this.timeout(1000 * 15);
