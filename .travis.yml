@@ -9,5 +9,8 @@ sudo: required
 
 services:
   - docker
+
+env:
+  - TRAVIS=true
   
 
