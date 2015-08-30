@@ -119,7 +119,7 @@ DockerContainer.prototype.printLogs = function() {
 
 DockerContainer.prototype.logs = function () {
     if (this._container) {
-        return this._container.logs({stdout: 1, stderr: 0})
+        return this._container.logs({stdout: 1, stderr: 1})
             .then(muxedStream => new Promise((resolve, reject) => {
                 let buffer = "";
                 const ts = through(function (data) {
