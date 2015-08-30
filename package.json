@@ -1,6 +1,6 @@
 {
   "name": "sokoban",
-  "version": "0.4.0",
+  "version": "0.3.1",
   "description": "Sokoban moves Docker containers around. Meant for usage in an E2E testing environment.",
   "repository": {
     "type": "git",
