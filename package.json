@@ -24,7 +24,6 @@
     "chai-string": "^1.1.2",
     "mocha": "^2.2.1",
     "mocha-loader": "^0.7.1",
-    "promise": "^7.0.4",
     "sinon": "^1.15.4",
     "sinon-chai": "^2.8.0"
   },
@@ -34,6 +33,7 @@
     "dockerode": "^2.2.2",
     "dockerode-promise": "^0.1.0",
     "lodash": "^3.10.1",
+    "promise": "^7.0.4",
     "qretry": "^0.3.0",
     "through": "^2.3.8",
     "winston": "^1.0.1"
