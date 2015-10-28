@@ -1,6 +1,6 @@
 {
   "name": "sokoban",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Sokoban moves Docker containers around. Meant for usage in an E2E testing environment.",
   "repository": {
     "type": "git",
@@ -34,7 +34,6 @@
     "dockerode": "^2.2.2",
     "dockerode-promise": "^0.1.0",
     "lodash": "^3.10.1",
-    "promise": "^7.0.4",
     "qretry": "^0.3.0",
     "through": "^2.3.8",
     "winston": "^1.0.1"
