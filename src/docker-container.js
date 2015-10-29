@@ -151,12 +151,4 @@ DockerContainer.prototype.kill = function () {
     }
 };
 
-DockerContainer.prototype.host = function () {
-    if (process.env.DOCKER_HOST) {
-        return url.parse(process.env.DOCKER_HOST).hostname;
-    } else {
-        throw new Error("DOCKER_HOST environment variable is required");
-    }
-}
-
 export default DockerContainer;

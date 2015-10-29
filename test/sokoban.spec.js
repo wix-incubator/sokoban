@@ -25,10 +25,9 @@ describe("Sokoban", function() {
 
     beforeEach(() => {
         container = sandbox.stub(DockerContainer.prototype);
-        container.host.returns(Host);
         container.run.returns(Promise.resolve());
 
-        sokoban = new Sokoban();
+        sokoban = new Sokoban(Host);
     });
 
     afterEach(() => {
