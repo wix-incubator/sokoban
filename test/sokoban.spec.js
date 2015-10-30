@@ -92,4 +92,8 @@ describe("Sokoban", function() {
 
         return sokoban.killAll().then(() => expect(container.kill).to.be.calledTwice);
     });
+
+    it("provides the host's address", () => {
+        expect(sokoban.dockerHostName()).to.equal(Host);
+    })
 });

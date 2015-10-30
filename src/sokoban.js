@@ -11,6 +11,10 @@ function Sokoban(maybeHostname) {
 
 }
 
+Sokoban.prototype.dockerHostName = function() {
+    return this.ipResolver.resolve();
+}
+
 Sokoban.prototype.provision = function(imageTag, containerName) {
     this.containers[containerName] = new DockerContainer(imageTag, containerName);
     this.containers[containerName].pullIfNeeded();

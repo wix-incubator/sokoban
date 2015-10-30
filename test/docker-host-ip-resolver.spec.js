@@ -32,7 +32,7 @@ describe("the ip resolver", () => {
 
     it("uses the DOCKER_HOST environment variable", () => {
         const host = "foobar";
-        process.env.DOCKER_HOST = `tcp://${host}`;
+        process.env.DOCKER_HOST = `tcp://${host}:1234`;
         const resolver = new DockerHostIpResolver();
 
         expect(resolver.resolve()).to.equal(host);
