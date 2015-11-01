@@ -31,12 +31,12 @@
     "promise": "^7.0.4",
     "colors": "^1.1.2",
     "curry": "^1.2.0",
+    "debug": "^2.2.0",
     "dockerode": "^2.2.2",
     "dockerode-promise": "^0.1.0",
     "lodash": "^3.10.1",
     "qretry": "^0.3.0",
-    "through": "^2.3.8",
-    "winston": "^1.0.1"
+    "through": "^2.3.8"
   },
   "author": "shai.yallin@gmail.com",
   "license": "MIT"

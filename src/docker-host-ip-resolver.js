@@ -1,6 +1,5 @@
 import Url from 'url';
 import childProcess from 'child_process';
-import winston from 'winston';
 
 export default function DockerHostIpResolver(hostName) {
     this.hostName = hostName;

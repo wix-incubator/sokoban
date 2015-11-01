@@ -3,13 +3,15 @@ import url from 'url';
 import Promise from 'promise';
 import readline from 'readline';
 import colors from 'colors/safe';
-import winston from 'winston';
 import _ from 'lodash';
 import through from 'through';
 
+const debug = require('debug')('sokoban:DockerContainer');
+
+
 function logAndThrow(args) {
     return function (e) {
-        winston.error(...args, e);
+        debug(...args, e);
         throw e;
     }
 }
@@ -31,15 +33,15 @@ DockerContainer.prototype.pullIfNeeded = function () {
     const onComplete = stream => new Promise((resolve, reject) => {
         const onFinished = (err, output) => {
             if (err) {
-                winston.error("DockerContainer: pull failed with error", err);
+                debug("pull failed with error", err);
                 reject(err);
             } else {
-                winston.info("DockerContainer: pull complete for image", this.imageName);
+                debug("pull complete for image", this.imageName);
                 resolve(output);
             }
         }
 
-        const onProgress = event => winston.silly("DockerContainer: pull.onProgress", this.imageName, event);
+        const onProgress = event => debug("pull.onProgress", this.imageName, event);
 
         this._docker.$subject.modem.followProgress(stream, onFinished, onProgress);
     });
@@ -47,10 +49,10 @@ DockerContainer.prototype.pullIfNeeded = function () {
     this.pullResult = this._docker.listImages({filter: this.imageName})
         .then(images => {
             if (images.length) {
-                winston.debug("DockerContainer: image", this.imageName, "found locally; not pulling");
+                debug("image", this.imageName, "found locally; not pulling");
                 return Promise.resolve();
             } else {
-                winston.info("DockerContainer: pulling image", this.imageName);
+                debug("pulling image", this.imageName);
                 return this._docker.pull(this.imageName).then(onComplete, logAndThrow(["failed pulling image", this.imageName]));
             }
         });
@@ -70,7 +72,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
             },
         }
 
-        winston.info("DockerContainer.create: creating container with options", JSON.stringify(options));
+        debug("creating container with options", options);
 
         return this._docker.createContainer(options);
     }
@@ -86,10 +88,9 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
             "PortBindings": bindings
         };
 
-        winston.info("DockerContainer.start: starting container from image", this.imageName, "with options", JSON.stringify(options));
-        winston.silly("DockerContainer: container = ", JSON.stringify(container));
+        debug("starting container from image", this.imageName, "with options", options);
         return container.start(options).then(() => {
-            winston.debug("DockerContainer.start: container", this.containerName, "started");
+            debug("container", this.containerName, "started");
             this._container = container;
         });
     }
@@ -105,15 +106,15 @@ DockerContainer.prototype.isRunning = function() {
 
 DockerContainer.prototype.printLogs = function() {
     if (this._container) {
-        winston.info("DockerContainer.logs: dumping logs for container", this.containerName);
+        debug("dumping logs for container", this.containerName);
         var color = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)];
         return this.logs().then(logs => {
             logs.split('\n').map(line => {
-                winston.info("DockerContainer", colors[color](this.containerName), ":", line);
+                debug(colors[color](this.containerName), ":", line);
             });
         });
     } else {
-        winston.error("Can't dump logs of non-started container", this.containerName, "from image", this.imageName);
+        debug("Can't dump logs of non-started container", this.containerName, "from image", this.imageName);
     }
 };
 
@@ -135,19 +136,19 @@ DockerContainer.prototype.logs = function () {
 
             }));
     } else {
-        winston.error("Can't dump logs of non-started container", this.containerName, "from image", this.imageName);
+        debug("Can't dump logs of non-started container", this.containerName, "from image", this.imageName);
     }
 };
 
 DockerContainer.prototype.kill = function () {
     if (this._container) {
-        winston.info("killing container", this.containerName);
+        debug("killing container", this.containerName);
 
         return this._container.stop()
-            .catch(e => winston.info("error stopping container", e))
+            .catch(e => debug("error stopping container", e))
             .then(() => this._container.remove());
     } else {
-        winston.info("Not shutting down non-started container", this.containerName, "from image", this.imageName);
+        debug("Not shutting down non-started container", this.containerName, "from image", this.imageName);
     }
 };
 

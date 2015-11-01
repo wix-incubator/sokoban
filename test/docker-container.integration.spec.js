@@ -1,7 +1,6 @@
 import DockerContainer from '../src/docker-container';
 import retry from 'qretry';
 import {expect} from 'chai';
-import winston from 'winston';
 import Promise from 'promise';
 
 describe("the docker driver", function() {
@@ -14,8 +13,6 @@ describe("the docker driver", function() {
     it("creates and starts a container", () => {
         container = new DockerContainer("hello-world", "helloWorldContainer");
         container.pullIfNeeded();
-
-        winston.level = 'info';
 
         let killContainer = () => {
             if (!process.env.TRAVIS) {

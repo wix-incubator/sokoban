@@ -4,7 +4,6 @@ import ChaiAsPromised from 'chai-as-promised';
 import DockerContainer from '../src/docker-container';
 import Sokoban from '../src/sokoban';
 import chai from 'chai';
-import winston from 'winston';
 import Promise from 'promise';
 
 const expect = chai.expect;

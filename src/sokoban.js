@@ -2,8 +2,9 @@ import DockerContainer from './docker-container';
 import Promise from 'promise';
 import _ from 'lodash';
 import retry from 'qretry';
-import winston from 'winston';
 import IpResolver from './docker-host-ip-resolver';
+
+const debug = require('debug')('sokoban');
 
 function Sokoban(maybeHostname) {
     this.containers = {};
@@ -41,11 +42,11 @@ Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, l
             .then(
             () => {
                 const containerInfo = {host};
-                winston.debug(containerName, "ready, returning container info", containerInfo);
+                debug(containerName, "ready, returning container info", containerInfo);
                 return containerInfo;
             },
-                e => {
-                winston.error(containerName, "not ready after", maxRetries, "attempts, error is", e);
+            e => {
+                debug(containerName, "not ready after", maxRetries, "attempts, error is", e);
                 throw e;
             }
         );

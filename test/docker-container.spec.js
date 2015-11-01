@@ -4,7 +4,6 @@ import ChaiString from 'chai-string';
 import DockerContainer from '../src/docker-container';
 import Docker from 'dockerode-promise';
 import chai from 'chai';
-import winston from 'winston';
 import Promise from 'promise';
 
 const expect = chai.expect;
