@@ -1,7 +1,7 @@
 import DockerContainer from './docker-container';
-import Promise from 'promise';
+import Promise from 'bluebird';
 import _ from 'lodash';
-import retry from 'qretry';
+import retry from 'bluebird-retry';
 import IpResolver from './docker-host-ip-resolver';
 
 const debug = require('debug')('sokoban');
@@ -35,9 +35,9 @@ Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, l
 
         return container.run({ports, env, volumes, links})
             .then(() => retry(() => barrier(host), {
-                maxRetry: maxRetries,
+                max_tries: maxRetries,
                 interval: delayInterval || 1000,
-                intervalMultiplicator: 1.2
+                backoff: 1.2
             }))
             .then(
             () => {

@@ -1,7 +1,7 @@
 import DockerContainer from '../src/docker-container';
 import retry from 'qretry';
 import {expect} from 'chai';
-import Promise from 'promise';
+import Promise from 'bluebird';
 
 describe("the docker driver", function() {
 

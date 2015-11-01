@@ -4,7 +4,7 @@ import ChaiString from 'chai-string';
 import DockerContainer from '../src/docker-container';
 import Docker from 'dockerode-promise';
 import chai from 'chai';
-import Promise from 'promise';
+import Promise from 'bluebird';
 
 const expect = chai.expect;
 chai.use(SinonChai);
@@ -18,6 +18,7 @@ describe("DockerContainer", () => {
 
     beforeEach(() => {
         docker = sandbox.stub(Docker.prototype);
+        docker.pull.returns(Promise.resolve());
     });
 
     afterEach(() => {

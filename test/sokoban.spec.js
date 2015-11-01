@@ -4,7 +4,7 @@ import ChaiAsPromised from 'chai-as-promised';
 import DockerContainer from '../src/docker-container';
 import Sokoban from '../src/sokoban';
 import chai from 'chai';
-import Promise from 'promise';
+import Promise from 'bluebird';
 
 const expect = chai.expect;
 chai.use(SinonChai);

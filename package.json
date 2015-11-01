@@ -28,7 +28,8 @@
     "sinon-chai": "^2.8.0"
   },
   "dependencies": {
-    "promise": "^7.0.4",
+    "bluebird": "^3.0.4",
+    "bluebird-retry": "^0.5.2",
     "colors": "^1.1.2",
     "curry": "^1.2.0",
     "debug": "^2.2.0",

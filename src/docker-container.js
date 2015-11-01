@@ -1,6 +1,6 @@
 import Docker from 'dockerode-promise';
 import url from 'url';
-import Promise from 'promise';
+import Promise from 'bluebird';
 import readline from 'readline';
 import colors from 'colors/safe';
 import _ from 'lodash';
