@@ -54,7 +54,7 @@ Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, l
 };
 
 Sokoban.prototype.dumpAllLogs = function() {
-    return _.reduce(this.containers, (promise, container) => promise.then(container.printLogs()), Promise.resolve());
+    return _.reduce(this.containers, (promise, container) => promise.then(() => container.printLogs()), Promise.resolve());
 };
 
 Sokoban.prototype.killAll = function() {
