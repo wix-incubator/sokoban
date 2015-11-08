@@ -16,19 +16,28 @@ function logAndThrow(args) {
     }
 }
 
-function DockerContainer(imageName, containerName) {
+function DockerContainer(options) {
 
     // this is because in CI we must use sock explicitly, while in OSX this doesn't work
     this._docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
 
-    this.imageName = imageName;
-    this.containerName = containerName;
+    this.imageName = options.imageName;
+    this.containerName = options.containerName;
+    this.options = options;
 
     this._container = undefined;
     this.pullResult = Promise.resolve();
 }
 
-DockerContainer.prototype.pullIfNeeded = function () {
+DockerContainer.prototype.getContainerNameInDocker = function() {
+    if (this.options.randomizeNames) {
+        return this.containerName + "_" + Math.random().toString(16).substring(2);
+    } else {
+        return this.containerName;
+    }
+}
+
+DockerContainer.prototype.pullIfNeeded = function() {
 
     const onComplete = stream => new Promise((resolve, reject) => {
         const onFinished = (err, output) => {
@@ -63,7 +72,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
     const create = () => {
         const options = {
             Image: this.imageName,
-            name: this.containerName,
+            name: this.getContainerNameInDocker(),
             Env: _.map(env, (v, k) => `${k}=${v}`),
             Volumes: _.mapValues(volumes, () => ({})),
             HostConfig: {
@@ -151,5 +160,9 @@ DockerContainer.prototype.kill = function () {
         debug("Not shutting down non-started container", this.containerName, "from image", this.imageName);
     }
 };
+
+function addRandomSuffixTo(containerName) {
+    return containerName + "_" + Math.random().toString(16).substring(2);
+}
 
 export default DockerContainer;

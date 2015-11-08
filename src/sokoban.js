@@ -6,9 +6,16 @@ import IpResolver from './docker-host-ip-resolver';
 
 const debug = require('debug')('sokoban');
 
-function Sokoban(maybeHostname) {
+const Defaults = {randomizeNames: true};
+
+function Sokoban(options) {
+    if (typeof options !== 'object') {
+        options = {hostname: options};
+    }
+
+    this.options = _.assign(options, Defaults);
     this.containers = {};
-    this.ipResolver = new IpResolver(maybeHostname);
+    this.ipResolver = new IpResolver(options.hostname);
 
 }
 
@@ -16,8 +23,8 @@ Sokoban.prototype.dockerHostName = function() {
     return this.ipResolver.resolve();
 }
 
-Sokoban.prototype.provision = function(imageTag, containerName) {
-    this.containers[containerName] = new DockerContainer(imageTag, containerName);
+Sokoban.prototype.provision = function(imageName, containerName) {
+    this.containers[containerName] = new DockerContainer({imageName, containerName, randomizeNames: this.options.randomizeNames});
     this.containers[containerName].pullIfNeeded();
 };
 

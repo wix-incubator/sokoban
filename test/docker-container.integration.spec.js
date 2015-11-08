@@ -11,7 +11,7 @@ describe("the docker driver", function() {
     this.timeout(1000 * 15);
 
     it("creates and starts a container", () => {
-        container = new DockerContainer("hello-world", "helloWorldContainer");
+        container = new DockerContainer({imageName: "hello-world", containerName: "helloWorldContainer"});
         container.pullIfNeeded();
 
         let killContainer = () => {

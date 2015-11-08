@@ -11,7 +11,7 @@ chai.use(SinonChai);
 chai.use(ChaiString);
 
 describe("DockerContainer", () => {
-    const imageTag = "a/b";
+    const imageName = "a/b";
     const sandbox = sinon.sandbox.create();
 
     let docker;
@@ -30,18 +30,18 @@ describe("DockerContainer", () => {
 
         it("attempts to pull images that do not exist locally", () => {
             const images = Promise.resolve([]);
-            docker.listImages.withArgs({filter: imageTag}).returns(images);
+            docker.listImages.withArgs({filter: imageName}).returns(images);
 
-            new DockerContainer(imageTag, "a").pullIfNeeded();
+            new DockerContainer({imageName, containerName: "a"}).pullIfNeeded();
 
-            return images.then(() => expect(docker.pull).to.have.been.calledWith(imageTag));
+            return images.then(() => expect(docker.pull).to.have.been.calledWith(imageName));
         });
 
         it("does not attempt to pull images that do exist locally", () => {
             const images = Promise.resolve([{}]);
-            docker.listImages.withArgs({filter: imageTag}).returns(images);
+            docker.listImages.withArgs({filter: imageName}).returns(images);
 
-            new DockerContainer(imageTag, "a").pullIfNeeded();
+            new DockerContainer({imageName, containerName: "a"}).pullIfNeeded();
 
             return images.then(() => expect(docker.pull).not.to.have.been.called);
         });
@@ -51,7 +51,7 @@ describe("DockerContainer", () => {
         const fakeContainer = {};
         const containerName = "a";
         const run = options => {
-            const container = new DockerContainer(imageTag, containerName);
+            const container = new DockerContainer({imageName, containerName});
             return container.run(options || {})
                 .then(() => container) };
 
@@ -63,7 +63,7 @@ describe("DockerContainer", () => {
 
         it("creates and starts a container", () => run()
             .then(container => expect(container.isRunning()).to.be.true)
-            .then(() => expect(docker.createContainer).to.be.calledWithMatch({name: containerName, Image: imageTag}))
+            .then(() => expect(docker.createContainer).to.be.calledWithMatch({name: containerName, Image: imageName}))
             .then(() => expect(fakeContainer.start).to.be.called));
 
 
@@ -79,6 +79,13 @@ describe("DockerContainer", () => {
         it("passes volumes and binds to the container", () => run({volumes: {"/guestDir": "/hostDir"}})
             .then(() => expect(docker.createContainer).to.be.calledWithMatch({Volumes: {"/guestDir": {}}, HostConfig: {Binds: ["/hostDir:/guestDir"]}})));
     });
+
+    it("adds a random suffix to container name", () => {
+        const containerName = "a";
+        expect(new DockerContainer({imageName, containerName: containerName, randomizeNames: true}).getContainerNameInDocker())
+            .to.startWith(containerName).and.not.equal(containerName);
+    });
+
 
 });
 
