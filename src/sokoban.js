@@ -31,6 +31,11 @@ Sokoban.prototype.provision = function(imageName, containerName) {
 Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, links, maxRetries, delayInterval}) {
 
     const container = this.containers[containerName];
+
+    if (!container) {
+        throw new Error(`Container '${containerName}' not provisioned`);
+    }
+
     const host = this.ipResolver.resolve();
 
     if (!host) {
