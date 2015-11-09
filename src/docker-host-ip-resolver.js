@@ -13,7 +13,7 @@ function getIpFromEnv() {
     try {
         const host = process.env.DOCKER_HOST;
         const url = Url.parse(host);
-        return url && url.hostname;
+        return url && url.hostname && url.hostname.trim();
     } catch(e) {
         return null;
     }
