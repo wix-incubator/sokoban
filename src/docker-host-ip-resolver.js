@@ -13,12 +13,12 @@ function getIpFromEnv() {
     try {
         const host = process.env.DOCKER_HOST;
         const url = Url.parse(host);
-        return url && url.hostname && url.hostname.trim();
+        return url && url.hostname;
     } catch(e) {
         return null;
     }
 }
 
 function getIpFromInsideContainer() {
-    return childProcess.execSync("/sbin/ip route|awk '/default/ { print $3 }'").toString();
+    return childProcess.execSync("/sbin/ip route|awk '/default/ { print $3 }'").toString().trim();
 }
