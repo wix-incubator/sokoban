@@ -11,6 +11,6 @@ services:
   - docker
 
 env:
-  - TRAVIS=true DEBUG=sokoban
+  - TRAVIS=true DEBUG=sokoban DOCKER_HOST_IP=127.0.0.1
   
 

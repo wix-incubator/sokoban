@@ -3,7 +3,7 @@ import Sokoban from '../src/sokoban';
 import {expect} from 'chai';
 import request from 'request-promise';
 
-var sokoban = new Sokoban();
+const sokoban = new Sokoban(process.env.DOCKER_HOST_IP);
 
 after(sokoban.killAll.bind(sokoban));
 
