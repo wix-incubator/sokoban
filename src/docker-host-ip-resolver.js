@@ -20,5 +20,5 @@ function getIpFromEnv() {
 }
 
 function getIpFromInsideContainer() {
-    return childProcess.execSync("/sbin/ip route|awk '/default/ { print $3 }'");
+    return childProcess.execSync("/sbin/ip route|awk '/default/ { print $3 }'").toString();
 }
