@@ -19,16 +19,20 @@ function Sokoban(options) {
 
 }
 
-Sokoban.prototype.dockerHostName = function() {
+Sokoban.prototype.dockerHostName = function () {
     return this.ipResolver.resolve();
 }
 
-Sokoban.prototype.provision = function(imageName, containerName) {
-    this.containers[containerName] = new DockerContainer({imageName, containerName, randomizeNames: this.options.randomizeNames});
+Sokoban.prototype.provision = function (imageName, containerName) {
+    this.containers[containerName] = new DockerContainer({
+        imageName,
+        containerName,
+        randomizeNames: this.options.randomizeNames
+    });
     this.containers[containerName].pullIfNeeded();
 };
 
-Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, links, maxRetries, delayInterval}) {
+Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, barrier, volumes, links, maxRetries, delayInterval}) {
 
     const container = this.containers[containerName];
 
@@ -45,31 +49,31 @@ Sokoban.prototype.run = function({containerName, ports, env, barrier, volumes, l
             };
         maxRetries = maxRetries || 5;
 
-        return container.run({ports, env, volumes, links})
+        return container.run({ports, publishAllPorts, env, volumes, links})
             .then(() => retry(() => barrier(host), {
                 max_tries: maxRetries,
                 interval: delayInterval || 1000,
                 backoff: 1.2
             }))
-            .then(
-            () => {
-                const containerInfo = {host};
+            .then(() => container.getPortMappings())
+            .then(portMappings => {
+                const containerInfo = {host, portMappings};
                 debug(containerName, "ready, returning container info", containerInfo);
                 return containerInfo;
-            },
-            e => {
+            })
+            .catch(e => {
                 debug(containerName, "not ready after", maxRetries, "attempts, error is", e);
                 throw e;
-            }
-        );
+            })
+
     }
 };
 
-Sokoban.prototype.dumpAllLogs = function() {
+Sokoban.prototype.dumpAllLogs = function () {
     return _.reduce(this.containers, (promise, container) => promise.then(() => container.printLogs()), Promise.resolve());
 };
 
-Sokoban.prototype.killAll = function() {
+Sokoban.prototype.killAll = function () {
     return Promise.all(_.map(this.containers, c => c.kill()));
 };
 

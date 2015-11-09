@@ -1,14 +1,9 @@
+import './test.boot';
 import sinon from 'sinon';
-import SinonChai from 'sinon-chai';
-import ChaiAsPromised from 'chai-as-promised';
 import DockerContainer from '../src/docker-container';
 import Sokoban from '../src/sokoban';
-import chai, {expect} from 'chai';
+import {expect} from 'chai';
 import Promise from 'bluebird';
-
-chai.use(SinonChai);
-chai.use(ChaiAsPromised);
-
 
 describe("Sokoban", function () {
 

@@ -5,6 +5,7 @@ import readline from 'readline';
 import colors from 'colors/safe';
 import _ from 'lodash';
 import through from 'through';
+import {parsePorts} from './inspect-parser';
 
 const debug = require('debug')('sokoban:DockerContainer');
 
@@ -68,7 +69,7 @@ DockerContainer.prototype.pullIfNeeded = function() {
 
 }
 
-DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
+DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAllPorts}) {
     const create = () => {
         const options = {
             Image: this.imageName,
@@ -76,6 +77,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
             Env: _.map(env, (v, k) => `${k}=${v}`),
             Volumes: _.mapValues(volumes, () => ({})),
             HostConfig: {
+                PublishAllPorts: !!publishAllPorts,
                 Links: _.map(links, (v, k) => `${k}:${v}`),
                 Binds: _.map(volumes, (v, k) => `${v}:${k}`),
             },
@@ -93,7 +95,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
             bindings[ports.from + "/tcp"] = [{"HostPort": "" + ports.to}];
         }
 
-        const options = {
+        const options = ports && {
             "PortBindings": bindings
         };
 
@@ -112,6 +114,12 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links}) {
 DockerContainer.prototype.isRunning = function() {
     return !!this._container;
 }
+
+DockerContainer.prototype.getPortMappings = function() {
+    return this._container.inspect()
+        .then(inspectResult => {debug("inspect results", inspectResult); return inspectResult})
+        .then(({NetworkSettings: {Ports}}) => parsePorts(Ports));
+};
 
 DockerContainer.prototype.printLogs = function() {
     if (this._container) {

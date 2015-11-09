@@ -3,6 +3,7 @@ var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
 var del = require('del');
 var path = require('path');
+var sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('clean', function (cb) {
     del(["dist/**/*"], cb)
@@ -10,7 +11,9 @@ gulp.task('clean', function (cb) {
 
 gulp.task('transpile', ['clean'], function () {
     return gulp.src(['src/**/*.js', 'test/**/*.js'], {nodir: true})
+        .pipe(sourcemaps.init())
         .pipe(babel({stage: 0}))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(function (vfile) {
             return path.join('dist', path.relative(vfile.cwd, vfile.base));
         }));

@@ -1,10 +1,8 @@
+import './test.boot';
 import DockerHostIpResolver from '../src/docker-host-ip-resolver';
-import chai, {expect} from 'chai';
+import {expect} from 'chai';
 import sinon from 'sinon';
-import SinonChai from 'sinon-chai';
 import childProcess from 'child_process';
-
-chai.use(SinonChai);
 
 describe("the ip resolver", () => {
     let DOCKER_HOST_ENV;

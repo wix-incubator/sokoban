@@ -1,3 +1,4 @@
+import './test.boot';
 import DockerContainer from '../src/docker-container';
 import retry from 'qretry';
 import {expect} from 'chai';
