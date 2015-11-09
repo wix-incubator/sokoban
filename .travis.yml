@@ -11,6 +11,6 @@ services:
   - docker
 
 env:
-  - TRAVIS=true DEBUG=*
+  - TRAVIS=true DEBUG=sokoban
   
 

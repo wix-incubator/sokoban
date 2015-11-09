@@ -8,7 +8,7 @@ var sokoban = new Sokoban();
 after(sokoban.killAll.bind(sokoban));
 
 describe("Sokoban", function () {
-    this.timeout(1000 * 30);
+    this.timeout(1000 * 60 * 5);
 
     it("starts a container listening to a random port", () => {
         sokoban.provision("httpd", "httpd");
