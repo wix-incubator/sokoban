@@ -13,7 +13,9 @@ describe("Sokoban", function () {
     it("starts a container listening to a random port", () => {
         sokoban.provision("httpd", "httpd");
 
-        return sokoban.run({containerName: "httpd", publishAllPorts: true})
+        const barrier = (host, portMappings) => request.get(`http://${host}:${portMappings["80"]}`);
+
+        return sokoban.run({barrier, containerName: "httpd", publishAllPorts: true})
             .then(({host, portMappings}) => request.get(`http://${host}:${portMappings["80"]}`))
             .then(body => expect(body).to.include("It works!"));
     });

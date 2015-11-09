@@ -50,16 +50,18 @@ Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, b
         maxRetries = maxRetries || 5;
 
         return container.run({ports, publishAllPorts, env, volumes, links})
-            .then(() => retry(() => barrier(host), {
-                max_tries: maxRetries,
-                interval: delayInterval || 1000,
-                backoff: 1.2
-            }))
             .then(() => container.getPortMappings())
             .then(portMappings => {
-                const containerInfo = {host, portMappings};
-                debug(containerName, "ready, returning container info", containerInfo);
-                return containerInfo;
+                return retry(() => barrier(host, portMappings), {
+                                max_tries: maxRetries,
+                                interval: delayInterval || 1000,
+                                backoff: 1.2
+                            })
+                    .then(() => {
+                        const containerInfo = {host, portMappings};
+                        debug(containerName, "ready, returning container info", containerInfo);
+                        return containerInfo;
+                })
             })
             .catch(e => {
                 debug(containerName, "not ready after", maxRetries, "attempts, error is", e);
