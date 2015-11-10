@@ -6,7 +6,7 @@ import IpResolver from './docker-host-ip-resolver';
 
 const debug = require('debug')('sokoban');
 
-const Defaults = {randomizeNames: true};
+const Defaults = {randomizeNames: false};
 
 function Sokoban(options) {
     if (typeof options !== 'object') {

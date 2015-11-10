@@ -1,4 +1,7 @@
 import 'source-map-support/register';
+import 'babel-polyfill';
+import 'longjohn';
+
 import chai from 'chai';
 
 import SinonChai from 'sinon-chai';
@@ -9,3 +12,5 @@ chai.use(ChaiString);
 
 import ChaiAsPromised from 'chai-as-promised';
 chai.use(ChaiAsPromised);
+
+
