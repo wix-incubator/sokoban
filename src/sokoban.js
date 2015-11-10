@@ -45,23 +45,22 @@ Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, b
     if (!host) {
         return Promise.reject("Could not resolve Docker hostname");
     } else {
-        barrier = barrier || function () {
-            };
+        barrier = barrier || function () {};
         maxRetries = maxRetries || 5;
 
         return container.run({ports, publishAllPorts, env, volumes, links})
             .then(() => container.getPortMappings())
             .then(portMappings => {
                 return retry(() => barrier(host, portMappings), {
-                                max_tries: maxRetries,
-                                interval: delayInterval || 1000,
-                                backoff: 1.2
-                            })
+                    max_tries: maxRetries,
+                    interval: delayInterval || 1000,
+                    backoff: 1.2
+                })
                     .then(() => {
-                        const containerInfo = {host, portMappings};
+                        const containerInfo = {host, portMappings, containerName: container.containerName};
                         debug(containerName, "ready, returning container info", containerInfo);
                         return containerInfo;
-                })
+                    })
             })
             .catch(e => {
                 debug(containerName, "not ready after", maxRetries, "attempts, error is", e);

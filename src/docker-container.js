@@ -23,19 +23,11 @@ function DockerContainer(options) {
     this._docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
 
     this.imageName = options.imageName;
-    this.containerName = options.containerName;
+    this.containerName = options.randomizeNames ? addRandomSuffixTo(options.containerName) : options.containerName;
     this.options = options;
 
     this._container = undefined;
     this.pullResult = Promise.resolve();
-}
-
-DockerContainer.prototype.getContainerNameInDocker = function() {
-    if (this.options.randomizeNames) {
-        return this.containerName + "_" + Math.random().toString(16).substring(2);
-    } else {
-        return this.containerName;
-    }
 }
 
 DockerContainer.prototype.pullIfNeeded = function() {
@@ -73,7 +65,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAl
     const create = () => {
         const options = {
             Image: this.imageName,
-            name: this.getContainerNameInDocker(),
+            name: this.containerName,
             Env: _.map(env, (v, k) => `${k}=${v}`),
             Volumes: _.mapValues(volumes, () => ({})),
             HostConfig: {

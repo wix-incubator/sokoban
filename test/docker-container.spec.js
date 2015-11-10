@@ -78,12 +78,6 @@ describe("DockerContainer", () => {
             .then(() => expect(docker.createContainer).to.be.calledWithMatch({HostConfig: {PublishAllPorts: true}})));
     });
 
-    it("adds a random suffix to container name", () => {
-        const containerName = "a";
-        expect(new DockerContainer({imageName, containerName: containerName, randomizeNames: true}).getContainerNameInDocker())
-            .to.startWith(containerName).and.not.equal(containerName);
-    });
-
     it("returns a mapping of container to host ports", () => {
         fakeContainer.inspect = sandbox.stub();
         fakeContainer.inspect.returns(Promise.resolve({
