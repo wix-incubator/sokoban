@@ -73,6 +73,9 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAl
                 Links: _.map(links, (v, k) => `${k}:${v}`),
                 Binds: _.map(volumes, (v, k) => `${v}:${k}`),
             },
+            AttachStdout: true,
+            AttachStderr: true,
+            Tty: true,
         }
 
         debug("creating container with options", options);

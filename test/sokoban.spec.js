@@ -68,7 +68,13 @@ describe("Sokoban", function () {
         });
 
         it("fails with a descriptive warning when attempting to start a non-provisioned container", () => {
-            expect(() => sokoban.run({containerName:"zzz"})).to.throw("Container 'zzz' not provisioned");
+            return expect(() => sokoban.run({containerName:"zzz"})).to.throw("Container 'zzz' not provisioned");
+        });
+
+        it("does not fail when a container has finished running with a 0 exit code", () => {
+            container.getState.returns(Promise.resolve({Running: false, ExitCode: 0}));
+
+            return expect(sokoban.run({containerName: "a"})).to.be.fulfilled;
         });
     });
 
