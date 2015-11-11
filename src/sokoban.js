@@ -15,7 +15,7 @@ function Sokoban(options) {
         options = {hostname: options};
     }
 
-    this.options = _.assign(options, Defaults);
+    this.options = _.assign(Defaults, options);
     this.containers = {};
     this.ipResolver = new IpResolver(options.hostname);
 
