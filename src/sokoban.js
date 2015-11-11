@@ -8,6 +8,8 @@ const debug = require('debug')('sokoban');
 
 const Defaults = {randomizeNames: false};
 
+//TODO move 'pull' here, hold a dictionary of images currently being pulled separately from instantiated containers
+//TODO kill using event emitter?
 function Sokoban(options) {
     if (typeof options !== 'object') {
         options = {hostname: options};
