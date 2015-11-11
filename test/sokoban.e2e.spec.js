@@ -29,10 +29,10 @@ describe("Sokoban", function () {
     it("starts a container listening to a random port",  () => co(function*() {
         sokoban.provision("httpd", "httpd");
 
-        const barrier = (host, portMappings) => request.get(`http://${host}:${portMappings["80"]}`);
+        const pollServer = (host, portMappings) => request.get(`http://${host}:${portMappings["80"]}`);
 
-        const {host, portMappings} = yield sokoban.run({barrier, containerName: "httpd", publishAllPorts: true});
-        const body = yield request.get(`http://${host}:${portMappings["80"]}`);
+        const body = yield sokoban.run({pollServer, containerName: "httpd", publishAllPorts: true})
+            .then(({host, portMappings}) => pollServer(host, portMappings));
 
         expect(body).to.include("It works!");
     }).catch(onerror));
