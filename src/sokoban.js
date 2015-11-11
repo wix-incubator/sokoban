@@ -51,6 +51,7 @@ Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, b
         maxRetries = maxRetries || 5;
 
         return container.run({ports, publishAllPorts, env, volumes, links})
+            .then(() => Promise.delay(100)) //TODO remove me ASAP
             .then(() => container.getState())
             .then(state => {
                 debug("State", state);
