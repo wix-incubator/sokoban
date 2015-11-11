@@ -24,7 +24,7 @@ describe("Sokoban", function () {
 
         const {containerName} = yield(sokoban.run({containerName: "hello2"}));
         expect(containerName).to.startWith("hello2").and.not.equal("hello2");
-    }));
+    }).catch(onerror));
 
     it("starts a container listening to a random port",  () => co(function*() {
         sokoban.provision("httpd", "httpd");
@@ -35,5 +35,16 @@ describe("Sokoban", function () {
         const body = yield request.get(`http://${host}:${portMappings["80"]}`);
 
         expect(body).to.include("It works!");
-    }));
+    }).catch(onerror));
+
+    it("fails with a descriptive error when the containers did not start", () => {
+        sokoban.provision("electricmonk/exiter", "exiter");
+
+        return expect(sokoban.run({containerName: "exiter", env: {CODE: 42}})).to.be.rejectedWith("Container exiter exited with code 42");
+    });
 });
+
+
+function onerror(err) {
+    throw err;
+}

@@ -51,6 +51,14 @@ Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, b
         maxRetries = maxRetries || 5;
 
         return container.run({ports, publishAllPorts, env, volumes, links})
+            .then(() => Promise.delay(100)) //TODO remove me ASAP
+            .then(() => container.getState())
+            .then(state => {
+                debug("State", state);
+                if (!state.Running && state.ExitCode) {
+                    throw new Error(`Container ${containerName} exited with code ${state.ExitCode}`);
+                }
+            })
             .then(() => container.getPortMappings())
             .then(portMappings => {
                 return retry(() => barrier(host, portMappings), {
@@ -58,11 +66,11 @@ Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, b
                     interval: delayInterval || 1000,
                     backoff: 1.2
                 })
-                    .then(() => {
-                        const containerInfo = {host, portMappings, containerName: container.containerName};
-                        debug(containerName, "ready, returning container info", containerInfo);
-                        return containerInfo;
-                    })
+            .then(() => {
+                const containerInfo = {host, portMappings, containerName: container.containerName};
+                debug(containerName, "ready, returning container info", containerInfo);
+                return containerInfo;
+            })
             })
             .catch(e => {
                 debug(containerName, "not ready after", maxRetries, "attempts, error is", e);

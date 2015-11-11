@@ -19,6 +19,7 @@ describe("Sokoban", function () {
     beforeEach(() => {
         container = sandbox.stub(DockerContainer.prototype);
         container.run.returns(Promise.resolve());
+        container.getState.returns(Promise.resolve({Running: true}));
 
         sokoban = new Sokoban({hostname: Host});
     });

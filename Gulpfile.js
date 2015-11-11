@@ -4,6 +4,7 @@ var babel = require('gulp-babel');
 var del = require('del');
 var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
+var argv = require('yargs').argv;
 
 gulp.task('clean', function (cb) {
     del(["dist/**/*"], cb)
@@ -25,5 +26,7 @@ gulp.task('watch', function () {
 
 gulp.task('test', ['transpile'], function () {
     return gulp.src('dist/test/**/*.spec.js', {read: false})
-        .pipe(mocha({reporter: process.env.npm_config_reporter || 'list'}))
+        .pipe(mocha({
+            grep: argv.grep
+        }))
 });

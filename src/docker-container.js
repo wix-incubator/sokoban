@@ -81,6 +81,7 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAl
     }
 
     const start = (container) => {
+        this._container = container;
         const bindings = {};
 
         if (ports) {
@@ -94,7 +95,6 @@ DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAl
         debug("starting container from image", this.imageName, "with options", options);
         return container.start(options).then(() => {
             debug("container", this.containerName, "started");
-            this._container = container;
         });
     }
 
@@ -111,6 +111,11 @@ DockerContainer.prototype.getPortMappings = function() {
     return this._container.inspect()
         .then(inspectResult => {debug("inspect results", inspectResult); return inspectResult})
         .then(({NetworkSettings: {Ports}}) => parsePorts(Ports));
+};
+
+DockerContainer.prototype.getState = function() {
+    return this._container.inspect()
+        .then(inspectResult => inspectResult.State);
 };
 
 DockerContainer.prototype.printLogs = function() {
