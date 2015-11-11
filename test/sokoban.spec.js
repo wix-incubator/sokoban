@@ -1,9 +1,11 @@
 import './test.boot';
 import sinon from 'sinon';
 import DockerContainer from '../src/docker-container';
+import Docker from 'dockerode-promise';
 import Sokoban from '../src/sokoban';
 import {expect} from 'chai';
 import Promise from 'bluebird';
+import {Duplex} from 'stream';
 
 describe("Sokoban", function () {
 
@@ -28,20 +30,46 @@ describe("Sokoban", function () {
         sandbox.restore();
     });
 
-    it("pulls a provisioned container", () => {
-        sokoban.provision("a/b", "a");
+    describe("pullImage", function() {
 
-        expect(container.pullIfNeeded).to.have.been.called;
+        let docker;
+        const pullStream = new Duplex({readableObjectMode: true});
+        pullStream.push(null);
+
+        beforeEach(() => {
+            docker = sandbox.stub(Docker.prototype);
+
+            docker.pull.returns(Promise.resolve(pullStream));
+        });
+
+        this.slow(2000);
+        const imageName = "a/b";
+
+        it("attempts to pull images that do not exist locally", () => {
+            const images = Promise.resolve([]);
+            docker.listImages.withArgs({filter: imageName}).returns(images);
+
+            return sokoban.pullImage(imageName)
+                .then(() => expect(docker.pull).to.have.been.calledWith(imageName));
+        });
+
+        it("does not attempt to pull images that do exist locally", () => {
+            const images = Promise.resolve([{}]);
+            docker.listImages.withArgs({filter: imageName}).returns(images);
+
+            return sokoban.pullImage(imageName)
+                .then(() => expect(docker.pull).not.to.have.been.called);
+        });
     });
 
     describe("run", () => {
 
-        beforeEach(() => sokoban.provision("a/b", "a"));
+        //beforeEach(() => sokoban.provision("a/b", "a"));
 
         it("runs a container", () => {
             const barrier = sandbox.spy();
 
-            return sokoban.run({barrier, containerName: "a"})
+            return sokoban.run({barrier, imageName: "a/b", containerName: "a"})
                 .then(containerInfo => {
                     expect(barrier).to.have.been.called;
                     expect(containerInfo.host).to.equal(Host);
@@ -54,7 +82,7 @@ describe("Sokoban", function () {
             barrier.onFirstCall().throws(new Error("kaboom"))
                 .onSecondCall().returns(true);
 
-            return sokoban.run({barrier, containerName: "a", delayInterval: 1})
+            return sokoban.run({barrier, imageName: "a/b", containerName: "a", delayInterval: 1})
                 .then(() => expect(barrier).to.have.been.calledTwice);
 
         });
@@ -64,23 +92,19 @@ describe("Sokoban", function () {
 
             barrier.throws(new Error("kaboom"));
 
-            return expect(sokoban.run({barrier, containerName: "a", delayInterval: 1, maxRetries: 1})).to.be.rejected;
-        });
-
-        it("fails with a descriptive warning when attempting to start a non-provisioned container", () => {
-            return expect(() => sokoban.run({containerName:"zzz"})).to.throw("Container 'zzz' not provisioned");
+            return expect(sokoban.run({barrier, imageName: "a/b", containerName: "a", delayInterval: 1, maxRetries: 1})).to.be.rejected;
         });
 
         it("does not fail when a container has finished running with a 0 exit code", () => {
             container.getState.returns(Promise.resolve({Running: false, ExitCode: 0}));
 
-            return expect(sokoban.run({containerName: "a"})).to.be.fulfilled;
+            return expect(sokoban.run({imageName: "a/b", containerName: "a"})).to.be.fulfilled;
         });
     });
 
     it("fetches logs from all containers", () => {
-        sokoban.provision("a/b", "a");
-        sokoban.provision("a/b", "b");
+        sokoban.run({imageName: "a/b", containerName: "a"});
+        sokoban.run({imageName: "a/b", containerName: "b"});
 
         container.printLogs.returns(Promise.resolve());
 
@@ -88,8 +112,8 @@ describe("Sokoban", function () {
     });
 
     it("kills all containers", () => {
-        sokoban.provision("a/b", "a");
-        sokoban.provision("a/b", "b");
+        sokoban.run({imageName: "a/b", containerName: "a"});
+        sokoban.run({imageName: "a/b", containerName: "b"});
 
         container.kill = sandbox.stub();
         container.kill.returns(Promise.resolve());

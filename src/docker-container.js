@@ -19,46 +19,15 @@ function logAndThrow(args) {
 
 function DockerContainer(options) {
 
-    // this is because in CI we must use sock explicitly, while in OSX this doesn't work
-    this._docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
+    this._docker = options.docker;
 
     this.imageName = options.imageName;
     this.containerName = options.randomizeNames ? addRandomSuffixTo(options.containerName) : options.containerName;
     this.options = options;
 
     this._container = undefined;
-    this.pullResult = Promise.resolve();
-}
 
-DockerContainer.prototype.pullIfNeeded = function() {
-
-    const onComplete = stream => new Promise((resolve, reject) => {
-        const onFinished = (err, output) => {
-            if (err) {
-                debug("pull failed with error", err);
-                reject(err);
-            } else {
-                debug("pull complete for image", this.imageName);
-                resolve(output);
-            }
-        }
-
-        const onProgress = event => debug("pull.onProgress", this.imageName, event);
-
-        this._docker.$subject.modem.followProgress(stream, onFinished, onProgress);
-    });
-
-    this.pullResult = this._docker.listImages({filter: this.imageName})
-        .then(images => {
-            if (images.length) {
-                debug("image", this.imageName, "found locally; not pulling");
-                return Promise.resolve();
-            } else {
-                debug("pulling image", this.imageName);
-                return this._docker.pull(this.imageName).then(onComplete, logAndThrow(["failed pulling image", this.imageName]));
-            }
-        });
-
+    this.pullResult = this.options.pullImage ? this.options.pullImage(this.imageName) : Promise.resolve();
 }
 
 DockerContainer.prototype.run = function ({ports, env, volumes, links, publishAllPorts}) {

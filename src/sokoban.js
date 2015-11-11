@@ -1,3 +1,4 @@
+import Docker from 'dockerode-promise';
 import DockerContainer from './docker-container';
 import Promise from 'bluebird';
 import _ from 'lodash';
@@ -8,7 +9,6 @@ const debug = require('debug')('sokoban');
 
 const Defaults = {randomizeNames: false};
 
-//TODO move 'pull' here, hold a dictionary of images currently being pulled separately from instantiated containers
 //TODO kill using event emitter?
 function Sokoban(options) {
     if (typeof options !== 'object') {
@@ -16,31 +16,35 @@ function Sokoban(options) {
     }
 
     this.options = _.assign(Defaults, options);
-    this.containers = {};
+    this.containers = [];
     this.ipResolver = new IpResolver(options.hostname);
 
+    // this is because in CI we must use sock explicitly, while in OSX this doesn't work
+    this._docker = ~['darwin', 'win32'].indexOf(process.platform) ? new Docker() : new Docker({socketPath: '/var/run/docker.sock'});
+
+    this.images = {};
 }
 
 Sokoban.prototype.dockerHostName = function () {
     return this.ipResolver.resolve();
 }
 
-Sokoban.prototype.provision = function (imageName, containerName) {
-    this.containers[containerName] = new DockerContainer({
+Sokoban.prototype.run = function ({imageName, containerName, ports, publishAllPorts, env, barrier, volumes, links, maxRetries, delayInterval}) {
+
+    if (!imageName) {
+        throw new Error(`Container '${containerName}' not provisioned`);
+    }
+
+    this.pullImage(imageName);
+
+    const container = new DockerContainer({
+        docker: this._docker,
         imageName,
         containerName,
         randomizeNames: this.options.randomizeNames
     });
-    this.containers[containerName].pullIfNeeded();
-};
 
-Sokoban.prototype.run = function ({containerName, ports, publishAllPorts, env, barrier, volumes, links, maxRetries, delayInterval}) {
-
-    const container = this.containers[containerName];
-
-    if (!container) {
-        throw new Error(`Container '${containerName}' not provisioned`);
-    }
+    this.containers.push(container);
 
     const host = this.ipResolver.resolve();
 
@@ -87,5 +91,46 @@ Sokoban.prototype.dumpAllLogs = function () {
 Sokoban.prototype.killAll = function () {
     return Promise.all(_.map(this.containers, c => c.kill()));
 };
+
+Sokoban.prototype.pullImage = function pullImage(imageName) {
+    if (!this.images[imageName]) {
+        const onComplete = stream => new Promise((resolve, reject) => {
+            const onFinished = (err, output) => {
+                if (err) {
+                    debug("pull failed with error", err);
+                    reject(err);
+                } else {
+                    debug("pull complete for image", imageName);
+                    resolve(output);
+                }
+            }
+
+            const onProgress = event => debug("pull.onProgress", imageName, event);
+
+            this._docker.$subject.modem.followProgress(stream, onFinished, onProgress);
+        });
+
+        this.images[imageName] = this._docker.listImages({filter: imageName})
+            .then(images => {
+                if (images.length) {
+                    debug("image", imageName, "found locally; not pulling");
+                    return Promise.resolve();
+                } else {
+                    debug("pulling image", imageName);
+                    return this._docker.pull(imageName).then(onComplete, logAndThrow(["failed pulling image", imageName]));
+                }
+            });
+    }
+
+    return this.images[imageName];
+
+}
+
+function logAndThrow(args) {
+    return function (e) {
+        debug(...args, e);
+        throw e;
+    }
+}
 
 export default Sokoban;

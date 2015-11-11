@@ -23,7 +23,7 @@ describe("DockerContainer", () => {
     const fakeContainer = {};
     const containerName = "a";
     const run = options => {
-        const container = new DockerContainer({imageName, containerName});
+        const container = new DockerContainer({docker: new Docker(), imageName, containerName});
         return container.run(options || {})
             .then(() => container) };
 
@@ -31,28 +31,6 @@ describe("DockerContainer", () => {
         docker.createContainer.returns(Promise.resolve(fakeContainer));
         fakeContainer.start = sandbox.stub();
         fakeContainer.start.returns(Promise.resolve());
-    });
-
-    describe("pullIfNeeded", function() {
-        this.slow(2000);
-
-        it("attempts to pull images that do not exist locally", () => {
-            const images = Promise.resolve([]);
-            docker.listImages.withArgs({filter: imageName}).returns(images);
-
-            new DockerContainer({imageName, containerName: "a"}).pullIfNeeded();
-
-            return images.then(() => expect(docker.pull).to.have.been.calledWith(imageName));
-        });
-
-        it("does not attempt to pull images that do exist locally", () => {
-            const images = Promise.resolve([{}]);
-            docker.listImages.withArgs({filter: imageName}).returns(images);
-
-            new DockerContainer({imageName, containerName: "a"}).pullIfNeeded();
-
-            return images.then(() => expect(docker.pull).not.to.have.been.called);
-        });
     });
 
     describe("run", () => {
