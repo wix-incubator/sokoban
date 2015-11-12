@@ -39,6 +39,7 @@ Sokoban.prototype.run = function ({imageName, containerName, ports, publishAllPo
 
     const container = new DockerContainer({
         docker: this._docker,
+        pullImage: this.pullImage.bind(this),
         imageName,
         containerName,
         randomizeNames: this.options.randomizeNames
